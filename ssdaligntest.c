@@ -24,13 +24,20 @@
  * SUCH DAMAGE.
  */
 
+#include <fcntl.h>
+#include <getopt.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
+
+typedef struct result {
+	off_t offset;
+	float duration;
+	float throughput;
+} result_t;
 
 static struct option longopts[] = {
 	{ "read",          no_argument,       NULL, 'r' },
@@ -112,6 +119,14 @@ int main(int argc, char **argv) {
 
 	memset(buffer, 0, block_size);
 
+	size_t num_tests = interval_size / offset_step;
+	result_t* results = malloc(num_tests * sizeof(result_t));
+	if (results == NULL) {
+		perror("Cannot allocate results array");
+		free(buffer);
+		return 1;
+	}
+
 	/* open */
 	int f;
 	if (do_write && do_read) {
@@ -125,12 +140,14 @@ int main(int argc, char **argv) {
 	if (f == -1) {
 		perror("Cannot open file");
 		free(buffer);
+		free(results);
 		return 1;
 	}
 
 	/* run test */
+	size_t ntest = 0;
 	for (off_t base_offset = 0; base_offset < interval_size; base_offset += offset_step) {
-		fprintf(stderr, "offset %5lu", (unsigned long)base_offset);
+		fprintf(stderr, "test %u/%u (offset %lu)...\r", (unsigned)ntest + 1, (unsigned)num_tests, (unsigned long)base_offset);
 
 		lseek(f, base_offset, SEEK_SET);
 
@@ -169,16 +186,54 @@ int main(int argc, char **argv) {
 		float duration = (float)(end.tv_sec - start.tv_sec) + (float)(end.tv_usec - start.tv_usec) / 1000000.0f;
 		float throughput = (float)(block_size * count) / duration / 1024.0f / 1024.0f;
 
-		fprintf(stderr, ", duration %f (%f MB/s)\n", duration, throughput);
+		results[ntest].offset = base_offset;
+		results[ntest].duration = duration;
+		results[ntest].throughput = throughput;
+
+		ntest++;
+	}
+
+	fprintf(stderr, "\n");
+
+	/* process results */
+	float max_throughput = 0.0f;
+	float mean_throughput = 0.0f;
+	for (size_t i = 0; i < num_tests; i++) {
+		if (results[i].throughput > max_throughput)
+			max_throughput = results[i].throughput;
+		mean_throughput += results[i].throughput;
+	}
+
+	mean_throughput /= num_tests;
+
+	int is_aligned = 0;
+	off_t first_good = 0;
+
+	printf("OFFSET     DURATION      THROUGHPUT\n");
+	for (size_t i = 0; i < num_tests; i++) {
+		int good = (fabsf(results[i].throughput - max_throughput) < fabsf(results[i].throughput - mean_throughput));
+		if (good && i == 0)
+			is_aligned = 1;
+		if (good && first_good == 0)
+			first_good = results[i].offset;
+		printf("%6lu %10.2f s %10.2f MB/s%s\n", (unsigned long)results[i].offset, results[i].duration, results[i].throughput, good ? " <--" : "");
+	}
+
+	if (is_aligned) {
+		printf("The partition looks to be aligned\n");
+	} else {
+		printf("The partition doesn't look to be aligned, recommented offset = %lu (%lu 512b sectors)\n", (unsigned long)first_good, (unsigned long)first_good/512);
 	}
 
 	/* finalize */
 	free(buffer);
+	free(results);
 	close(f);
-	return 0;
+	return is_aligned ? 0 : 1;
 
 error:
 	free(buffer);
+	free(results);
 	close(f);
 	return 1;
 }

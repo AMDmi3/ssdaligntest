@@ -43,6 +43,36 @@ same blocks which are read are written back.
 * ```-k``` - number of blocks to skip (useful to counter caching)
 * ```file``` - usually device node for your disk or partition
 
+## Example
+
+Here's an example of runnig read test on some SSD partition. You
+can see offsets which are multiple of 4096 bytes giving better read
+performance, and since the partition begins with a "fast" offset
+it's correctly aligned.
+
+```
+./ssdaligntest -r -b 4096 -i 8192 -s 512 -c 10000 /dev/ada0p1
+test 16/16 (offset 7680)...
+OFFSET     DURATION      THROUGHPUT
+     0       1.51 s      25.93 MB/s <--
+   512       1.95 s      20.04 MB/s
+  1024       1.95 s      20.04 MB/s
+  1536       1.95 s      19.99 MB/s
+  2048       1.95 s      20.03 MB/s
+  2560       1.95 s      20.02 MB/s
+  3072       1.95 s      20.01 MB/s
+  3584       1.96 s      19.95 MB/s
+  4096       1.50 s      25.99 MB/s <--
+  4608       1.73 s      22.54 MB/s
+  5120       1.73 s      22.55 MB/s
+  5632       1.73 s      22.54 MB/s
+  6144       1.73 s      22.54 MB/s
+  6656       1.74 s      22.42 MB/s
+  7168       1.74 s      22.39 MB/s
+  7680       1.76 s      22.21 MB/s
+The partition looks to be aligned
+```
+
 ## Author ##
 
 * [Dmitry Marakasov](https://github.com/AMDmi3) <amdmi3@amdmi3.ru>

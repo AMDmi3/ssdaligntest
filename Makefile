@@ -7,7 +7,7 @@ PROG=		ssdaligntest
 all: ${PROG}
 
 ${PROG}: ${PROG}.c
-	${CC} ${CFLAGS} ${PROG}.c -o ${PROG}
+	${CC} ${CFLAGS} ${PROG}.c -o ${PROG} -lm
 
 clean:
 	rm -f ${PROG}
