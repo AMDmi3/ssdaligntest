@@ -37,10 +37,10 @@ destructive!), if both ```-r``` and ```-w``` are specified, the
 same blocks which are read are written back.
 
 * ```-b``` - read/write block size in bytes
-* ```-g``` - gap between blocks
-* ```-s``` - offset step for each test
+* ```-i``` - interval size in bytes
+* ```-s``` - offset step for each test in bytes
 * ```-c``` - number of blocks to read/write
-* ```-k``` - number of blocks to skip (to counter caching)
+* ```-k``` - number of blocks to skip (useful to counter caching)
 * ```file``` - usually device node for your disk or partition
 
 ## Author ##

@@ -33,19 +33,19 @@
 #include <sys/time.h>
 
 static struct option longopts[] = {
-	{ "read",        no_argument,       NULL, 'r' },
-	{ "write",       no_argument,       NULL, 'w' },
-	{ "block-size",  required_argument, NULL, 'b' },
-	{ "gap-size",    required_argument, NULL, 'g' },
-	{ "offset-step", required_argument, NULL, 's' },
-	{ "count",       required_argument, NULL, 'c' },
-	{ "skip-count",  required_argument, NULL, 'k' },
-	{ "help",        no_argument,       NULL, 'h' },
-	{ NULL,          0,                 NULL, 0 }
+	{ "read",          no_argument,       NULL, 'r' },
+	{ "write",         no_argument,       NULL, 'w' },
+	{ "block-size",    required_argument, NULL, 'b' },
+	{ "interval-size", required_argument, NULL, 'i' },
+	{ "offset-step",   required_argument, NULL, 's' },
+	{ "count",         required_argument, NULL, 'c' },
+	{ "skip-count",    required_argument, NULL, 'k' },
+	{ "help",          no_argument,       NULL, 'h' },
+	{ NULL,            0,                 NULL, 0 }
 };
 
 void usage(const char* progname) {
-	fprintf(stderr, "Usage: %s [-rw] [-b block-size] [-g gap-size] [-s offset-step] [-c count] [-k skip-count] file\n", progname);
+	fprintf(stderr, "Usage: %s [-rw] [-b block-size] [-i interval-size] [-s offset-step] [-c count] [-k skip-count] file\n", progname);
 }
 
 int main(int argc, char **argv) {
@@ -55,13 +55,13 @@ int main(int argc, char **argv) {
 	/* options */
 	int do_read = 0, do_write = 0;
 	unsigned long long block_size = 512;
-	unsigned long long gap_size = 0;
+	unsigned long long interval_size = 0;
 	unsigned long long offset_step = 512;
 	unsigned long long skip_count = 0;
 	unsigned long long count = 0;
 
 	/* process arguments */
-	while ((ch = getopt_long(argc, argv, "rwhb:g:s:c:", longopts, NULL)) != -1) {
+	while ((ch = getopt_long(argc, argv, "rwhb:i:s:c:", longopts, NULL)) != -1) {
 		switch (ch) {
 		case 'r':
 			do_read = 1;
@@ -72,8 +72,8 @@ int main(int argc, char **argv) {
 		case 'b':
 			block_size = strtoull(optarg, NULL, 10);
 			break;
-		case 'g':
-			gap_size = strtoull(optarg, NULL, 10);
+		case 'i':
+			interval_size = strtoull(optarg, NULL, 10);
 			break;
 		case 's':
 			offset_step = strtoull(optarg, NULL, 10);
@@ -94,6 +94,9 @@ int main(int argc, char **argv) {
 	}
 	argc -= optind;
 	argv += optind;
+
+	if (interval_size < block_size)
+		interval_size = block_size;
 
 	if (argc != 1 || (do_read == 0 && do_write == 0) || offset_step == 0) {
 		usage(progname);
@@ -126,7 +129,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* run test */
-	for (off_t base_offset = 0; base_offset < gap_size + block_size; base_offset += offset_step) {
+	for (off_t base_offset = 0; base_offset < interval_size; base_offset += offset_step) {
 		fprintf(stderr, "offset %5lu", (unsigned long)base_offset);
 
 		lseek(f, base_offset, SEEK_SET);
@@ -135,7 +138,7 @@ int main(int argc, char **argv) {
 		gettimeofday(&start, NULL);
 
 		for (off_t i = skip_count; i < skip_count + count; i++) {
-			off_t offset = base_offset + (block_size + gap_size) * i;
+			off_t offset = base_offset + interval_size * i;
 			if (do_read) {
 				if (lseek(f, offset, SEEK_SET) != offset) {
 					perror("Seek error");
