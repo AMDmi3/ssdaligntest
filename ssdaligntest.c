@@ -39,12 +39,13 @@ static struct option longopts[] = {
 	{ "gap-size",    required_argument, NULL, 'g' },
 	{ "offset-step", required_argument, NULL, 's' },
 	{ "count",       required_argument, NULL, 'c' },
+	{ "skip-count",  required_argument, NULL, 'k' },
 	{ "help",        no_argument,       NULL, 'h' },
 	{ NULL,          0,                 NULL, 0 }
 };
 
 void usage(const char* progname) {
-	fprintf(stderr, "Usage: %s [-rw] [-b block-size] [-g gap-size] [-s offset-step] [-c count] file\n", progname);
+	fprintf(stderr, "Usage: %s [-rw] [-b block-size] [-g gap-size] [-s offset-step] [-c count] [-k skip-count] file\n", progname);
 }
 
 int main(int argc, char **argv) {
@@ -56,6 +57,7 @@ int main(int argc, char **argv) {
 	unsigned long long block_size = 512;
 	unsigned long long gap_size = 0;
 	unsigned long long offset_step = 512;
+	unsigned long long skip_count = 0;
 	unsigned long long count = 0;
 
 	/* process arguments */
@@ -78,6 +80,9 @@ int main(int argc, char **argv) {
 			break;
 		case 'c':
 			count = strtoull(optarg, NULL, 10);
+			break;
+		case 'k':
+			skip_count = strtoull(optarg, NULL, 10);
 			break;
 		case 'h':
 			usage(progname);
@@ -129,7 +134,7 @@ int main(int argc, char **argv) {
 		struct timeval start, end;
 		gettimeofday(&start, NULL);
 
-		for (unsigned int i = 0; i < count; i++) {
+		for (off_t i = skip_count; i < skip_count + count; i++) {
 			off_t offset = base_offset + (block_size + gap_size) * i;
 			if (do_read) {
 				if (lseek(f, offset, SEEK_SET) != offset) {

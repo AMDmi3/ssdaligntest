@@ -40,6 +40,7 @@ same blocks which are read are written back.
 * ```-g``` - gap between blocks
 * ```-s``` - offset step for each test
 * ```-c``` - number of blocks to read/write
+* ```-k``` - number of blocks to skip (to counter caching)
 * ```file``` - usually device node for your disk or partition
 
 ## Author ##
