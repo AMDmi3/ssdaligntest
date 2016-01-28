@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
 	if (is_aligned) {
 		printf("The partition looks to be aligned\n");
 	} else {
-		printf("The partition doesn't look to be aligned, recommented offset = %lu (%lu 512b sectors)\n", (unsigned long)first_good, (unsigned long)first_good/512);
+		printf("The partition doesn't look to be aligned, recommended offset is %lu (%lu 512b sectors)\n", (unsigned long)first_good, (unsigned long)first_good/512);
 	}
 
 	/* finalize */
