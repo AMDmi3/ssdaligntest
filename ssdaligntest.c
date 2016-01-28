@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 	unsigned long long count = 0;
 
 	/* process arguments */
-	while ((ch = getopt_long(argc, argv, "rwhb:i:s:c:", longopts, NULL)) != -1) {
+	while ((ch = getopt_long(argc, argv, "rwhb:i:s:c:k:", longopts, NULL)) != -1) {
 		switch (ch) {
 		case 'r':
 			do_read = 1;
