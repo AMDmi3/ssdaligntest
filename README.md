@@ -45,7 +45,7 @@ same blocks which are read are written back.
 
 ## Example
 
-Here's an example of runnig read test on some SSD partition. You
+Here's an example of running read test on some SSD partition. You
 can see offsets which are multiple of 4096 bytes giving better read
 performance, and since the partition begins with a "fast" offset
 it's correctly aligned.
