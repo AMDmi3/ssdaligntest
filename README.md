@@ -29,7 +29,7 @@ be evaluated by the user.
 ```
 
 * ```-r``` - read blocks during the test
-* ```-w``` - write blocks during the test
+* ```-w``` - write blocks during the test (destructive!)
 
 At least one of above options is required. If only ```-w``` is
 specified, zeroes are written to the target file (which is
