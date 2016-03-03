@@ -25,7 +25,7 @@ be evaluated by the user.
 
 ## Usage
 ```
-./ssdaligntest [-rw] [-b block-size] [-g gap-size] [-s offset-step] [-c count] file
+./ssdaligntest [-rw] [-b block-size] [-i interval-size] [-s offset-step] [-c count] [-k skip-count] file
 ```
 
 * ```-r``` - read blocks during the test
