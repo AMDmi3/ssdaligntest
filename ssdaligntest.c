@@ -144,6 +144,13 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	/* safety */
+	if (do_write) {
+		fprintf(stderr, "WARNING! %s mode, disk contents will be destroyed!\n", do_read ? "read+write" : "write");
+		fprintf(stderr, "Hit Ctrl+C now to cancel\n");
+		sleep(5);
+	}
+
 	/* run test */
 	size_t ntest = 0;
 	for (off_t base_offset = 0; base_offset < interval_size; base_offset += offset_step) {
